@@ -14,6 +14,8 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     static final String DB_id = "id";
     static final String DB_Record_onDate = "on_date";
     static final String DB_Record_himekuriDate = "himekuri_date";
+    static final String DB_Diary_date = "date";
+    static final String DB_Diary_diary = "diary";
 
     public MySQLiteOpenHelper(Context context){
         super(context, DatabaseFile, null, DatabaseVersion);
@@ -21,7 +23,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     public void onCreate(SQLiteDatabase database){
 
-        database.execSQL("create table " + DiaryTable + " (" + DB_id + " integer primary key autoincrement not null, date integer not null, diary string not null");
+        database.execSQL("create table " + DiaryTable + " (" + DB_id + " integer primary key autoincrement not null, " + DB_Diary_date + " integer not null, " + DB_Diary_diary + " string not null)");
         database.execSQL("create table " + HimekuriRecordTable + " (" + DB_id + " integer primary key autoincrement not null, " + DB_Record_onDate + " integer not null, " + DB_Record_himekuriDate + " integer not null)");
     }
 

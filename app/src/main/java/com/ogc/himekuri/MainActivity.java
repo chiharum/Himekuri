@@ -17,7 +17,8 @@ public class MainActivity extends AppCompatActivity {
     SQLiteDatabase database;
 
     TextView yearText, monthText, dateText, diaryText;
-    int screenHimekuriDate,screenYear, screenMonth, screenDate, todayYear, todayMonth, todayDateOfMonth, todayDate, lastVersion;
+    int screenHimekuriDate,screenYear, screenMonth, screenDateOfMonth, todayYear, todayMonth, todayDateOfMonth, todayDate, lastVersion;
+    String diary;
 
     boolean isFirstActivation;
 
@@ -56,18 +57,21 @@ public class MainActivity extends AppCompatActivity {
             //今日の日付を表示
             screenYear = todayYear;
             screenMonth = todayMonth;
-            screenDate = todayDate;
+            screenDateOfMonth = todayDate;
             //今日の日付を保存
             saveHimekuri(todayDate);
         }else{
             screenHimekuriDate = searchRecordAndGetLastDate();
             screenYear = screenHimekuriDate / 10000;
-            screenDate = (screenHimekuriDate -screenYear * 10000) / 100;
-            screenDate = screenHimekuriDate % 100;
+            screenDateOfMonth = (screenHimekuriDate -screenYear * 10000) / 100;
+            screenDateOfMonth = screenHimekuriDate % 100;
         }
         yearText.setText(String.valueOf(screenYear) + ". ");
         monthText.setText(String.valueOf(screenMonth));
-        dateText.setText(String.valueOf(screenDate));
+        dateText.setText(String.valueOf(screenDateOfMonth));
+
+        diary = searchFromDiary(screenHimekuriDate);
+        diaryText.setText(diary);
     }
 
     public int searchRecordAndGetLastDate(){
@@ -76,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
         int resultDate = 0;
 
         try{
-            cursor = database.query(MySQLiteOpenHelper.HimekuriRecordTable, new String[]{"himekuri_date"}, null, null, null, null, null);
-            int indexHimekuri_date = cursor.getColumnIndex("himekuri_date");
+            cursor = database.query(MySQLiteOpenHelper.HimekuriRecordTable, new String[]{MySQLiteOpenHelper.DB_Record_himekuriDate}, null, null, null, null, null);
+            int indexHimekuri_date = cursor.getColumnIndex(MySQLiteOpenHelper.DB_Record_himekuriDate);
 
             while(cursor.moveToNext()){
                 resultDate = cursor.getInt(indexHimekuri_date);
@@ -96,5 +100,26 @@ public class MainActivity extends AppCompatActivity {
         values.put(MySQLiteOpenHelper.DB_Record_onDate, todayDate);
         values.put(MySQLiteOpenHelper.DB_Record_himekuriDate, date);
         database.insert(MySQLiteOpenHelper.HimekuriRecordTable, null, values);
+    }
+
+    public String searchFromDiary(int date){
+
+        Cursor cursor = null;
+        String result = "";
+
+        try{
+            cursor = database.query(MySQLiteOpenHelper.DiaryTable, new String[]{MySQLiteOpenHelper.DB_Diary_diary}, MySQLiteOpenHelper.DB_Diary_date + " = ?", new String[]{String.valueOf(date)}, null, null, null);
+            int indexDiary = cursor.getColumnIndex(MySQLiteOpenHelper.DB_Diary_diary);
+
+            while(cursor.moveToNext()){
+                result = cursor.getString(indexDiary);
+            }
+        }finally{
+            if(cursor != null){
+                cursor.close();
+            }
+        }
+
+        return result;
     }
 }
