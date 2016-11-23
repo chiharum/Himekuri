@@ -16,12 +16,14 @@ public class MainActivity extends AppCompatActivity {
     MySQLiteOpenHelper mySQLiteOpenHelper;
     SQLiteDatabase database;
 
-    TextView monthText, dateText, diaryText;
-    int screenHimekuriDate, todayYear, todayMonth, todayDateOfMonth, todayDate;
+    TextView yearText, monthText, dateText, diaryText;
+    int screenHimekuriDate,screenYear, screenMonth, screenDate, todayYear, todayMonth, todayDateOfMonth, todayDate, lastVersion;
 
     boolean isFirstActivation;
 
     static final String Prefs_isFirstActivation = "isFirstActivation";
+    static final String Prefs_lastVersion = "lastVersion";
+    static final int PresentVersion = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
         mySQLiteOpenHelper = new MySQLiteOpenHelper(getApplicationContext());
         database = mySQLiteOpenHelper.getWritableDatabase();
 
+        yearText = (TextView)findViewById(R.id.yearText);
         monthText = (TextView)findViewById(R.id.monthText);
         dateText = (TextView)findViewById(R.id.dateText);
         diaryText = (TextView)findViewById(R.id.diaryText);
@@ -42,18 +45,29 @@ public class MainActivity extends AppCompatActivity {
         todayDate = todayDateOfMonth + todayMonth * 100 + todayYear * 10000;
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        //ユーザー別バージョン管理
+        sharedPreferences.edit().putInt(Prefs_lastVersion, PresentVersion).apply();
+
         isFirstActivation = sharedPreferences.getBoolean(Prefs_isFirstActivation, true);
-        if(isFirstActivation){
+        if(isFirstActivation) {
             isFirstActivation = true;
             sharedPreferences.edit().putBoolean("isFirstActivation", isFirstActivation).apply();
             //今日の日付を表示
-            monthText.setText(String.valueOf(todayMonth));
-            dateText.setText(String.valueOf(todayDateOfMonth));
+            screenYear = todayYear;
+            screenMonth = todayMonth;
+            screenDate = todayDate;
             //今日の日付を保存
             saveHimekuri(todayDate);
         }else{
             screenHimekuriDate = searchRecordAndGetLastDate();
+            screenYear = screenHimekuriDate / 10000;
+            screenDate = (screenHimekuriDate -screenYear * 10000) / 100;
+            screenDate = screenHimekuriDate % 100;
         }
+        yearText.setText(String.valueOf(screenYear) + ". ");
+        monthText.setText(String.valueOf(screenMonth));
+        dateText.setText(String.valueOf(screenDate));
     }
 
     public int searchRecordAndGetLastDate(){
