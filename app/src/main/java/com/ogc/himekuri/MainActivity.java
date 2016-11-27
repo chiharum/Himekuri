@@ -144,39 +144,6 @@ public class MainActivity extends AppCompatActivity {
         screenHimekuriDate = dateOfMonth + month * 100 + year * 10000;
     }
 
-    public void addDate(View view){
-        screenDateOfMonth++;
-        if(screenDateOfMonth == screenMaxDateOfMonth + 1){
-            screenMonth++;
-            screenDateOfMonth = 1;
-            if (screenMonth == 12){
-                screenYear++;
-                screenMonth = 0;
-                screenDateOfMonth = 1;
-            }
-        }
-        setHimekuriDate(screenYear, screenMonth, screenDateOfMonth);
-        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
-        saveHimekuri(screenHimekuriDate);
-    }
-
-    public void decreaseDate(View view){
-        screenDateOfMonth--;
-        if(screenDateOfMonth == 0){
-            screenMonth--;
-            setMaxDateOfMonth(screenYear, screenMonth, 1);
-            screenDateOfMonth = screenMaxDateOfMonth;
-            if(screenMonth == -1){
-                screenYear--;
-                screenMonth = 11;
-                screenDateOfMonth = 31;
-            }
-        }
-        setHimekuriDate(screenYear, screenMonth, screenDateOfMonth);
-        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
-        saveHimekuri(screenHimekuriDate);
-    }
-
     public void saveDiary(String diaryText){
 
         ContentValues values = new ContentValues();
@@ -207,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
                     text = spannableStringBuilder.toString();
                 }
                 saveDiary(text);
+                diaryText.setText(searchFromDiary(screenHimekuriDate));
                 alertDialog.dismiss();
             }
         };
@@ -217,11 +185,46 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+    public void addDate(View view){
+        screenDateOfMonth++;
+        if(screenDateOfMonth == screenMaxDateOfMonth + 1){
+            screenMonth++;
+            screenDateOfMonth = 1;
+            if (screenMonth == 12){
+                screenYear++;
+                screenMonth = 0;
+                screenDateOfMonth = 1;
+            }
+        }
+        setHimekuriDate(screenYear, screenMonth, screenDateOfMonth);
+        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
+        saveHimekuri(screenHimekuriDate);
+        diaryText.setText(searchFromDiary(screenHimekuriDate));
+    }
+
+    public void decreaseDate(View view){
+        screenDateOfMonth--;
+        if(screenDateOfMonth == 0){
+            screenMonth--;
+            setMaxDateOfMonth(screenYear, screenMonth, 1);
+            screenDateOfMonth = screenMaxDateOfMonth;
+            if(screenMonth == -1){
+                screenYear--;
+                screenMonth = 11;
+                screenDateOfMonth = 31;
+            }
+        }
+        setHimekuriDate(screenYear, screenMonth, screenDateOfMonth);
+        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
+        saveHimekuri(screenHimekuriDate);
+        diaryText.setText(searchFromDiary(screenHimekuriDate));
+    }
+
     public void menu(View view){
         
     }
 
     public void edit(View view){
-
+        editDiary();
     }
 }
