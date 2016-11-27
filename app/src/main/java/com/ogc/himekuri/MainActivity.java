@@ -1,5 +1,6 @@
 package com.ogc.himekuri;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -7,8 +8,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
-
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
@@ -16,8 +21,9 @@ public class MainActivity extends AppCompatActivity {
     MySQLiteOpenHelper mySQLiteOpenHelper;
     SQLiteDatabase database;
 
-    TextView yearText, monthText, dateText, diaryText;
-    int screenHimekuriDate,screenYear, screenMonth, screenDateOfMonth, todayYear, todayMonth, todayDateOfMonth, todayDate, lastVersion;
+    TextView monthText, dateText, diaryText;
+    EditText diaryEditText;
+    int screenHimekuriDate,screenYear, screenMonth, screenDateOfMonth, todayYear, todayMonth, todayDateOfMonth, todayDate, screenMaxDateOfMonth;
     String diary;
 
     boolean isFirstActivation;
@@ -34,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
         mySQLiteOpenHelper = new MySQLiteOpenHelper(getApplicationContext());
         database = mySQLiteOpenHelper.getWritableDatabase();
 
-        yearText = (TextView)findViewById(R.id.yearText);
         monthText = (TextView)findViewById(R.id.monthText);
         dateText = (TextView)findViewById(R.id.dateText);
         diaryText = (TextView)findViewById(R.id.diaryText);
@@ -52,23 +57,23 @@ public class MainActivity extends AppCompatActivity {
 
         isFirstActivation = sharedPreferences.getBoolean(Prefs_isFirstActivation, true);
         if(isFirstActivation) {
-            isFirstActivation = true;
+            isFirstActivation = false;
             sharedPreferences.edit().putBoolean("isFirstActivation", isFirstActivation).apply();
             //今日の日付を表示
             screenYear = todayYear;
             screenMonth = todayMonth;
-            screenDateOfMonth = todayDate;
+            screenDateOfMonth = todayDateOfMonth;
             //今日の日付を保存
-            saveHimekuri(todayDate);
+            if(searchRecordAndGetLastDate() != todayDate){
+                saveHimekuri(todayDate);
+            }
         }else{
             screenHimekuriDate = searchRecordAndGetLastDate();
             screenYear = screenHimekuriDate / 10000;
-            screenDateOfMonth = (screenHimekuriDate -screenYear * 10000) / 100;
+            screenMonth = (screenHimekuriDate -screenYear * 10000) / 100;
             screenDateOfMonth = screenHimekuriDate % 100;
         }
-        yearText.setText(String.valueOf(screenYear) + ". ");
-        monthText.setText(String.valueOf(screenMonth));
-        dateText.setText(String.valueOf(screenDateOfMonth));
+        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
 
         diary = searchFromDiary(screenHimekuriDate);
         diaryText.setText(diary);
@@ -121,5 +126,102 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return result;
+    }
+
+    public void setDateTexts(int year, int month, int dateOfMonth){
+        monthText.setText(year + ". " + (month + 1));
+        dateText.setText(String.valueOf(dateOfMonth));
+        setMaxDateOfMonth(year, month, dateOfMonth);
+    }
+
+    public void setMaxDateOfMonth(int year, int month, int date){
+        final Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date);
+        screenMaxDateOfMonth = calendar.getActualMaximum(Calendar.DATE);
+    }
+
+    public void setHimekuriDate(int year, int month, int dateOfMonth){
+        screenHimekuriDate = dateOfMonth + month * 100 + year * 10000;
+    }
+
+    public void addDate(View view){
+        screenDateOfMonth++;
+        if(screenDateOfMonth == screenMaxDateOfMonth + 1){
+            screenMonth++;
+            screenDateOfMonth = 1;
+            if (screenMonth == 12){
+                screenYear++;
+                screenMonth = 0;
+                screenDateOfMonth = 1;
+            }
+        }
+        setHimekuriDate(screenYear, screenMonth, screenDateOfMonth);
+        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
+        saveHimekuri(screenHimekuriDate);
+    }
+
+    public void decreaseDate(View view){
+        screenDateOfMonth--;
+        if(screenDateOfMonth == 0){
+            screenMonth--;
+            setMaxDateOfMonth(screenYear, screenMonth, 1);
+            screenDateOfMonth = screenMaxDateOfMonth;
+            if(screenMonth == -1){
+                screenYear--;
+                screenMonth = 11;
+                screenDateOfMonth = 31;
+            }
+        }
+        setHimekuriDate(screenYear, screenMonth, screenDateOfMonth);
+        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
+        saveHimekuri(screenHimekuriDate);
+    }
+
+    public void saveDiary(String diaryText){
+
+        ContentValues values = new ContentValues();
+        values.put(MySQLiteOpenHelper.DB_Diary_date, screenHimekuriDate);
+        values.put(MySQLiteOpenHelper.DB_Diary_diary, diaryText);
+        database.insert(MySQLiteOpenHelper.DiaryTable, null, values);
+    }
+
+    public void editDiary(){
+
+        LayoutInflater layoutInflater = (LayoutInflater)this.getSystemService(LAYOUT_INFLATER_SERVICE);
+        final View layout = layoutInflater.inflate(R.layout.edit_diary_dialog_layout, null);
+
+        diaryEditText = (EditText)layout.findViewById(R.id.diaryEditText);
+        Button saveButton = (Button)layout.findViewById(R.id.saveDiaryButton);
+        diaryEditText.setText(searchFromDiary(screenHimekuriDate));
+
+        final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+
+        View.OnClickListener listener = new View.OnClickListener(){
+            public void onClick(View view){
+
+                String text = null;
+                SpannableStringBuilder spannableStringBuilder = (SpannableStringBuilder)diaryEditText.getText();
+                if(spannableStringBuilder == null){
+                    text = null;
+                }else{
+                    text = spannableStringBuilder.toString();
+                }
+                saveDiary(text);
+                alertDialog.dismiss();
+            }
+        };
+
+        layout.findViewById(R.id.saveDiaryButton).setOnClickListener(listener);
+
+        alertDialog.setView(layout);
+        alertDialog.show();
+    }
+
+    public void menu(View view){
+        
+    }
+
+    public void edit(View view){
+
     }
 }
