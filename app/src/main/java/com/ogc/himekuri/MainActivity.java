@@ -2,6 +2,7 @@ package com.ogc.himekuri;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.Calendar;
 
@@ -185,6 +187,18 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+    public void startSettingActivity(){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, SettingActivity.class);
+        startActivity(intent);
+    }
+
+    public void startListActivity(){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, ListActivity.class);
+        startActivity(intent);
+    }
+
     public void addDate(View view){
         screenDateOfMonth++;
         if(screenDateOfMonth == screenMaxDateOfMonth + 1){
@@ -221,7 +235,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void menu(View view){
-        
+
+        LayoutInflater layoutInflater = (LayoutInflater)this.getSystemService(LAYOUT_INFLATER_SERVICE);
+        final View layout = layoutInflater.inflate(R.layout.menu_dialog_layout, null);
+
+//        ImageView settingImage = (ImageView)layout.findViewById(R.id.settingImage);
+//        ImageView listImage = (ImageView)layout.findViewById(R.id.listImage);
+
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                int id = v.getId();
+                if(id == R.id.settingImage){
+                    startSettingActivity();
+                }else if(id == R.id.listImage){
+                    startListActivity();
+                }
+            }
+        };
+
+        // TODO: 2016/12/09 SettingActivity, ListActivityのコード書く
+
+        layout.findViewById(R.id.settingImage).setOnClickListener(listener);
+        layout.findViewById(R.id.listImage).setOnClickListener(listener);
     }
 
     public void edit(View view){

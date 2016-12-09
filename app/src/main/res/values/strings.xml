@@ -3,4 +3,6 @@
     <string name="menu">メニュー</string>
     <string name="edit">編集</string>
     <string name="save">保存</string>
+    <string name="setting">設定</string>
+    <string name="list">一覧</string>
 </resources>
