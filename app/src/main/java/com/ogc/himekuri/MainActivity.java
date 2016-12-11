@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     static final String Prefs_isFirstActivation = "isFirstActivation";
     static final String Prefs_lastVersion = "lastVersion";
     static final int PresentVersion = 1;
+    static final String Intent_todayDate = "todayDate";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
     public void startListActivity(){
         Intent intent = new Intent();
         intent.setClass(MainActivity.this, ListActivity.class);
+        intent.putExtra(Intent_todayDate, todayDate);
         startActivity(intent);
     }
 

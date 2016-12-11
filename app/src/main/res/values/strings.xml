@@ -5,4 +5,6 @@
     <string name="save">保存</string>
     <string name="setting">設定</string>
     <string name="list">一覧</string>
+    <string name="showAllDay">すべての日を表示</string>
+    <string name="error">エラー</string>
 </resources>
