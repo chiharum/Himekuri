@@ -33,7 +33,7 @@ public class DiaryListCustomAdapter extends ArrayAdapter<DiaryListItem> {
         DiaryListItem item = getItem(position);
 
         if(item != null){
-            viewHolder.diaryListDateText.setText(item.date);
+            viewHolder.diaryListDateText.setText(String.valueOf(item.date));
             viewHolder.diaryListContentText.setText(item.content);
         }
 

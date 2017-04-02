@@ -49,21 +49,40 @@
             android:id="@+id/dateText"
             android:gravity="center" />
 
-        <Button
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="+"
-            android:id="@+id/addDateButton"
-            android:layout_gravity="bottom|right"
-            android:onClick="addDate" />
+            android:layout_gravity="center_horizontal|bottom">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="-"
-            android:id="@+id/decreaseDateButton"
-            android:onClick="decreaseDate"
-            android:layout_gravity="bottom|left" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="+"
+                android:id="@+id/addDateButton"
+                android:onClick="addDate"
+                android:layout_weight="1"
+                android:layout_gravity="bottom" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/setTodayDateButton"
+                android:layout_weight="2"
+                android:text="@string/setTodayDate"
+                android:onClick="setTodayDate"
+                android:layout_gravity="bottom" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="-"
+                android:id="@+id/decreaseDateButton"
+                android:onClick="decreaseDate"
+                android:layout_weight="1"
+                android:layout_gravity="bottom" />
+        </LinearLayout>
+
     </FrameLayout>
 
     <LinearLayout

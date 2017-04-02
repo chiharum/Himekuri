@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Calendar calendar = Calendar.getInstance();
         todayYear = calendar.get(Calendar.YEAR);
-        todayMonth = calendar.get(Calendar.MONTH);
+        todayMonth = calendar.get(Calendar.MONTH) + 1;
         todayDateOfMonth = calendar.get(Calendar.DATE);
         todayDate = todayDateOfMonth + todayMonth * 100 + todayYear * 10000;
 
@@ -208,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
             screenDateOfMonth = 1;
             if (screenMonth == 12){
                 screenYear++;
-                screenMonth = 0;
+                screenMonth = 1;
                 screenDateOfMonth = 1;
             }
         }
@@ -224,9 +225,9 @@ public class MainActivity extends AppCompatActivity {
             screenMonth--;
             setMaxDateOfMonth(screenYear, screenMonth, 1);
             screenDateOfMonth = screenMaxDateOfMonth;
-            if(screenMonth == -1){
+            if(screenMonth == 1){
                 screenYear--;
-                screenMonth = 11;
+                screenMonth = 12;
                 screenDateOfMonth = 31;
             }
         }
@@ -236,6 +237,18 @@ public class MainActivity extends AppCompatActivity {
         diaryText.setText(searchFromDiary(screenHimekuriDate));
     }
 
+    public void setTodayDate(View view){
+        //今日の日付を表示
+        screenYear = todayYear;
+        screenMonth = todayMonth;
+        screenDateOfMonth = todayDateOfMonth;
+        //今日の日付を保存
+        if(searchRecordAndGetLastDate() != todayDate){
+            saveHimekuri(todayDate);
+        }
+        setDateTexts(screenYear, screenMonth, screenDateOfMonth);
+    }
+
     public void menu(View view){
 
         LayoutInflater layoutInflater = (LayoutInflater)this.getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -243,6 +256,8 @@ public class MainActivity extends AppCompatActivity {
 
 //        ImageView settingImage = (ImageView)layout.findViewById(R.id.settingImage);
 //        ImageView listImage = (ImageView)layout.findViewById(R.id.listImage);
+
+
 
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
@@ -257,10 +272,13 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        // TODO: 2016/12/09 SettingActivity, ListActivityのコード書く
-
         layout.findViewById(R.id.settingImage).setOnClickListener(listener);
         layout.findViewById(R.id.listImage).setOnClickListener(listener);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("メニュー");
+        alertDialogBuilder.setView(layout);
+        alertDialogBuilder.show();
     }
 
     public void edit(View view){
