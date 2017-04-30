@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setDateTexts(int year, int month, int dateOfMonth){
-        monthText.setText(year + ". " + (month + 1));
+        monthText.setText(year + ". " + (month));
         dateText.setText(String.valueOf(dateOfMonth));
         setMaxDateOfMonth(year, month, dateOfMonth);
     }

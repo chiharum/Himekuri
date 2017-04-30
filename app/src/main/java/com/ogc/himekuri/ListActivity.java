@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
 import java.util.ArrayList;
@@ -18,9 +20,10 @@ public class ListActivity extends AppCompatActivity {
     MySQLiteOpenHelper mySQLiteOpenHelper;
     SQLiteDatabase database;
 
-    int todayDate, todayYear, todayMonth, todayDateOfMonth, screenYear, screenMonth, screenDate, screenDaysOfTheMonth;
+    int todayDate, todayYear, todayMonth, todayDateOfMonth, screenYear, screenMonth, screenDate, screenDaysCountOfTheMonth;
     List<DiaryListItem> items;
     DiaryListCustomAdapter adapter;
+    View footerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,65 +32,83 @@ public class ListActivity extends AppCompatActivity {
 
         // TODO: 2016/12/11 ListViewに全ての日記を表示(最初に1ヶ月分表示→下についたら次の1ヶ月分を読み込む)
 
+        //SQLite設定
         mySQLiteOpenHelper = new MySQLiteOpenHelper(getApplicationContext());
         database = mySQLiteOpenHelper.getWritableDatabase();
 
+        //今日の日付を取得
         todayDate = getIntent().getIntExtra(MainActivity.Intent_todayDate, 0);
         if(todayDate == 0){
             errorDialog();
         }else{
             todayYear = todayDate / 10000;
-            todayMonth = todayDate / 100 - todayYear * 100 + 1;
+            todayMonth = todayDate / 100 - todayYear * 100;
             todayDateOfMonth = todayDate % 100;
         }
         screenDate = todayDate;
         screenYear = todayYear;
         screenMonth = todayMonth;
-        screenDaysOfTheMonth = getDaysOfTheMonth(screenYear, screenMonth, screenDate);
+        screenDaysCountOfTheMonth = getDaysCountOfTheMonth(screenYear, screenMonth, screenDate);
 
+        //ListView設定
         diaryList = (ListView)findViewById(R.id.listView);
 
         //StackOverFlowでます！
 
-        setDiaryList(screenYear, screenMonth);
+        setDiaryList(screenYear, screenMonth, true);
     }
 
-    public void setDiaryList(int year, int month){
+    public void setDiaryList(final int year, final int month, boolean isFirst){
 
         int dateOfMonth = 1;
         items = new ArrayList<>();
 
-        while(dateOfMonth <= screenDaysOfTheMonth){
+        while(dateOfMonth <= screenDaysCountOfTheMonth){
             int date = makeDate(year, month, dateOfMonth);
             DiaryListItem item = new DiaryListItem(date, searchDiary(date));
             items.add(item);
             dateOfMonth++;
         }
 
-        adapter = new DiaryListCustomAdapter(this, R.layout.diary_list_layout, items);
-        diaryList.setAdapter(adapter);
+        adapter = new DiaryListCustomAdapter(getApplicationContext(), R.layout.diary_list_layout, items);
 
-//        diaryList.setOnScrollListener(new AbsListView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//
-//            }
-//
-//            @Override
-//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//
-//                if (firstVisibleItem + visibleItemCount > totalItemCount) {
-//                    screenYear = getNextMonthsDate(screenYear, screenMonth)[0];
-//                    screenMonth = getNextMonthsDate(screenYear, screenMonth)[1];
-//                    setDiaryList(screenYear, screenMonth);
-//                } else if (firstVisibleItem == 0) {
-//                    screenYear = getPreviousMonthsDate(screenYear, screenMonth)[0];
-//                    screenMonth = getPreviousMonthsDate(screenYear, screenMonth)[1];
-//                    setDiaryList(screenYear, screenMonth);
-//                }
-//                screenDate = makeDate(screenYear, screenMonth, 1);
-//            }
-//        });
+        diaryList.setAdapter(adapter);
+        diaryList.addFooterView(getFooterView());
+
+        diaryList.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+//                Log.i("total-visible==first", String.valueOf(totalItemCount - visibleItemCount == firstVisibleItem));
+
+                if(totalItemCount - visibleItemCount == firstVisibleItem){
+
+                    int dayOfMonth = 1;
+
+                    int[] nextDate = getNextMonthsDate(screenYear, screenMonth);
+                    screenYear = nextDate[0];
+                    screenMonth = nextDate[1];
+
+//                    items.clear();
+
+                    int itemCount = totalItemCount;
+                    for (int i = itemCount; i < itemCount + screenDaysCountOfTheMonth; i++){
+
+                        int date = makeDate(screenYear, screenMonth, dayOfMonth);
+                        DiaryListItem item = new DiaryListItem(date, searchDiary(date));
+                        items.add(item);
+                        dayOfMonth++;
+                    }
+
+                    adapter = new DiaryListCustomAdapter(getApplicationContext(), R.layout.diary_list_layout, items);
+                }
+            }
+        });
     }
 
     public String searchDiary(int date){
@@ -111,10 +132,19 @@ public class ListActivity extends AppCompatActivity {
         return result;
     }
 
-    public int getDaysOfTheMonth(int year, int month, int date){
+    public int getDaysCountOfTheMonth(int year, int month, int date){
         final Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, date);
-        return calendar.getActualMaximum(Calendar.DATE);
+
+        Log.i("month instance", String.valueOf(calendar.get(Calendar.MONTH)));
+
+        month = 4;
+
+        calendar.set(year, month - 1, date);
+        //日数が変
+
+        Log.i("month + days", String.valueOf(month) + " " + String.valueOf(calendar.getActualMaximum(Calendar.DATE)));
+
+        return calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
     }
 
     public int[] getNextMonthsDate(int year, int month){
@@ -148,6 +178,13 @@ public class ListActivity extends AppCompatActivity {
 
     public int makeDate(int year, int month, int dateOfMonth){
         return dateOfMonth + month * 100 + year * 10000;
+    }
+
+    private View getFooterView(){
+        if(footerView == null){
+            footerView = getLayoutInflater().inflate(R.layout.footer_view, null);
+        }
+        return footerView;
     }
 
     public void errorDialog(){
