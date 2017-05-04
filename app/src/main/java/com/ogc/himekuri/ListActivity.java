@@ -132,19 +132,19 @@ public class ListActivity extends AppCompatActivity {
         return result;
     }
 
-    public int getDaysCountOfTheMonth(int year, int month, int date){
-        final Calendar calendar = Calendar.getInstance();
+    public int getDaysCountOfTheMonth(int year, int resourceMonth, int date){
+        Calendar calendar = Calendar.getInstance();
 
-        Log.i("month instance", String.valueOf(calendar.get(Calendar.MONTH)));
+        resourceMonth = 2;
 
-        month = 4;
-
-        calendar.set(year, month - 1, date);
+        calendar.set(year, resourceMonth - 1, date);
         //日数が変
 
-        Log.i("month + days", String.valueOf(month) + " " + String.valueOf(calendar.getActualMaximum(Calendar.DATE)));
+        int result = calendar.getActualMaximum(Calendar.DATE);
 
-        return calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        Log.i("month + days", String.valueOf(resourceMonth) + " " + String.valueOf(result));
+
+        return result;
     }
 
     public int[] getNextMonthsDate(int year, int month){
